@@ -5,6 +5,9 @@ import Auth from '../utils/auth';
 import { saveBook, searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
+import { useQuery } from '@apollo/react-hooks';
+import { QUERY_ } from '../../../server/schemas/resolvers';
+
 const SearchBooks = () => {
   // create state for holding returned google api data
   const [searchedBooks, setSearchedBooks] = useState([]);
@@ -55,7 +58,9 @@ const SearchBooks = () => {
   // create function to handle saving a book to our database
   const handleSaveBook = async (bookId) => {
     // find the book in `searchedBooks` state by the matching id
-    const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+    // const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
+
+    const { id: bookId } = useParams();
 
     // get token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
