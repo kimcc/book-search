@@ -7,22 +7,14 @@ const resolvers = {
     me: async (parent, args, context) => {
       // only logged-in users should be able to use this mutation, hence why we check for the existence of context.user
       if (context.user) {
-        const userData = await User.findOne({ _id: context.user._id })
+        const userData = await User.findById({ _id: context.user._id })
           .select('-__v -password')
-          .populate('bookCount')
-          .populate('savedBooks');
+          // .populate('bookCount')
+          // .populate('savedBooks');
     
         return userData;
       }
       throw new AuthenticationError('Not logged in');
-    },
-
-    // get a user by username
-    user: async (parent, { username }) => {
-      return User.findOne({ username })
-        .select('-__v -password')
-        .populate('bookCount')
-        .populate('savedBooks');
     }
   },
 
@@ -51,13 +43,13 @@ const resolvers = {
     },
 
     // save book to user's saved books
-    saveBook: async (parent, args, context) => {
+    saveBook: async (parent, args , context) => {
       if (context.user) {
     
         const updatedBook = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $addToSet: { savedBooks: body } },
-          { new: true, runValidators: true } // use { new: true } flag so Mongo will return the updated document instead of the original document
+          { $push: { savedBooks: {...args} } }, // get all data from args to push to savedBooks
+          { new: true } // use { new: true } flag so Mongo will return the updated document instead of the original document
         );
         return updatedBook;
       }
@@ -68,8 +60,8 @@ const resolvers = {
     // remove book from saved books
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: user._id },
+        const updatedUser = await User.findByIdAndUpdate(
+          { _id: context.user._id },
           { $pull: { savedBooks: { bookId: bookId } } },
           { new: true }
         );
